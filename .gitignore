@@ -1,0 +1,9 @@
+service_account.json
+service_account.json.json
+credentials*.json
+google-oauth-credentials.json.json
+venv/
+.venv/
+__pycache__/
+*.pyc
+.env

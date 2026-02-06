@@ -157,9 +157,11 @@ def main():
     st.subheader("Матрица: сотрудник × проект")
     pivot = pivot_employee_project(df)
     if not pivot.empty:
-        display_pivot = pivot.reset_index()
-        display_pivot = display_pivot.rename(columns={"employee": "Сотрудник"})
-        st.dataframe(display_pivot.astype(int), use_container_width=True, hide_index=True)
+        display_pivot = pivot.reset_index().rename(columns={"employee": "Сотрудник"})
+        num_cols = [c for c in display_pivot.columns if c != "Сотрудник"]
+        display_pivot = display_pivot.copy()
+        display_pivot[num_cols] = display_pivot[num_cols].astype(int)
+        st.dataframe(display_pivot, use_container_width=True, hide_index=True)
     else:
         st.caption("Нет данных для матрицы.")
 

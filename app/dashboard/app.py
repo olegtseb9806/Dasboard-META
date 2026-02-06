@@ -153,6 +153,16 @@ def main():
         st.warning("За выбранный период записей нет.")
         return
 
+    # --- Матрица: сотрудник и количество ссылок по проектам (поднята вверх) ---
+    st.subheader("Матрица: сотрудник × проект")
+    pivot = pivot_employee_project(df)
+    if not pivot.empty:
+        display_pivot = pivot.reset_index()
+        display_pivot = display_pivot.rename(columns={"employee": "Сотрудник"})
+        st.dataframe(display_pivot.astype(int), use_container_width=True, hide_index=True)
+    else:
+        st.caption("Нет данных для матрицы.")
+
     # --- Блок: по сотрудникам ---
     st.subheader("По сотрудникам")
     df_emp = by_employee(df)
@@ -178,12 +188,6 @@ def main():
             st.plotly_chart(fig_proj, use_container_width=True)
         else:
             st.bar_chart(df_proj.set_index("project"))
-
-    # --- Матрица сотрудник × проект ---
-    st.subheader("Матрица: сотрудник × проект")
-    pivot = pivot_employee_project(df)
-    if not pivot.empty:
-        st.dataframe(pivot.astype(int), use_container_width=True, hide_index=True)
 
     # --- Последние размещения ---
     st.subheader("Последние размещения")

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Загрузка данных из 4 Google Таблиц или из CSV.
+Загрузка данных из 2 Google Таблиц (MR Anchors, TelecomAsia) или из CSV.
 Нормализация в общий формат: employee, project, date, source.
 """
 
@@ -11,6 +11,7 @@ from pathlib import Path
 import pandas as pd
 
 # Конфиг источников: spreadsheet_id, sheet_name, индексы колонок (0-based), есть ли статус
+# Только 2 таблицы: MR Anchors и TelecomAsia
 SOURCES = [
     {
         "id": "1DaiRFqU2d_85cXr0fDmyhzIY4V9fm0zxh4KraZMOFnw",
@@ -24,31 +25,9 @@ SOURCES = [
         "status_ok": ["Готово"],
     },
     {
-        "id": "1v_cheF0k0UCl9CniUWu-pTTYbl0CIOjE0BH0rzW3HXE",
-        "sheet": "Размещенные ссылки",
-        "name": "Основная РФ и СНГ",
-        "status_col": None,
-        "project_col": 1,
-        "version_col": 2,
-        "employee_col": 3,
-        "date_col": 6,
-        "status_ok": None,
-    },
-    {
         "id": "1S5lk-ya4iWwq5znY_vebAuTqloyTlWTcsNuXydZXT00",
         "sheet": "Outreach",
         "name": "TelecomAsia",
-        "status_col": 4,
-        "project_col": 1,
-        "version_col": 2,
-        "employee_col": 3,
-        "date_col": 5,
-        "status_ok": ["Готово"],
-    },
-    {
-        "id": "1yj3eWqTpjxZFU0e9yg5A6TIh79N-s9g1Zmz3U-Q_54E",
-        "sheet": "Posted links",
-        "name": "International",
         "status_col": 4,
         "project_col": 1,
         "version_col": 2,
@@ -177,8 +156,8 @@ def load_from_gsheet(cfg, creds_path=None):
 
 
 def load_all_from_gsheets(creds_path=None, which=None):
-    """Загрузить все 4 источника из Google Sheets. which = список индексов 0..3 или None = все."""
-    which = which if which is not None else [0, 1, 2, 3]
+    """Загрузить источники из Google Sheets. which = список индексов или None = все (2 таблицы)."""
+    which = which if which is not None else list(range(len(SOURCES)))
     all_records = []
     for i in which:
         if i < 0 or i >= len(SOURCES):

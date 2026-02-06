@@ -93,11 +93,8 @@ def main():
         date_from_widget = st.date_input("Дата с", value=date.today() - timedelta(days=30))
         date_to_widget = st.date_input("Дата по", value=date.today())
 
-    use_mr = st.checkbox("MR Anchors", value=True)
-    use_main = st.checkbox("Основная РФ и СНГ", value=True)
-    use_ta = st.checkbox("TelecomAsia", value=True)
-    use_int = st.checkbox("International", value=True)
-    which_sources = [i for i, _ in enumerate(SOURCES) if [use_mr, use_main, use_ta, use_int][i]]
+    # Всегда только 2 таблицы: MR Anchors и TelecomAsia (без выбора в интерфейсе)
+    which_sources = None  # все из SOURCES
 
     # Загрузка данных: сначала пробуем Google Sheets (файл, секреты или env)
     creds_source = _get_creds_source()
@@ -110,23 +107,20 @@ def main():
         st.info(
             "**Минимум:** 1) [Google Cloud → Credentials](https://console.cloud.google.com/apis/credentials) → Create Credentials → Service account → Keys → JSON. "
             "Файл сохрани как `service_account.json` в `c:\\project\\anchor_checker`. "
-            "2) В каждой из 4 таблиц нажми «Поделиться» и добавь email из JSON (строка `client_email`) с правом «Читатель». "
+            "2) В каждой из 2 таблиц нажми «Поделиться» и добавь email из JSON (строка `client_email`) с правом «Читатель». "
             "Email можно увидеть командой: `python show_share_email.py`. Подробно — файл **docs/МИНИМУМ_ДЕЙСТВИЙ.md** в проекте."
         )
-        uploaded = st.file_uploader("Или загрузи CSV листов (СНГ Outreach, Размещенные ссылки, Outreach, Posted links)", type="csv", accept_multiple_files=True)
+        uploaded = st.file_uploader("Или загрузи CSV листов (СНГ Outreach, Outreach)", type="csv", accept_multiple_files=True)
         if uploaded:
             all_recs = []
-            names = ["MR Anchors", "Основная", "TelecomAsia", "International"]
+            names = ["MR Anchors", "TelecomAsia"]
             for i, f in enumerate(uploaded):
                 try:
                     df_up = pd.read_csv(f, encoding="utf-8")
                 except Exception:
                     df_up = pd.read_csv(f, encoding="cp1251")
                 name = names[i] if i < len(names) else f.name
-                recs = load_from_dataframe(
-                    df_up, name,
-                    status_ok=["Готово"] if i != 1 else None,
-                )
+                recs = load_from_dataframe(df_up, name, status_ok=["Готово"])
                 all_recs.extend(recs)
             df_raw = records_to_dataframe(all_recs)
 
@@ -134,14 +128,12 @@ def main():
         share_email = get_service_account_email(creds_source) if creds_source else get_service_account_email(CREDS_PATH) if CREDS_PATH.exists() else None
         if share_email:
             st.warning(
-                "Данных нет. В каждой из 4 таблиц нажми **«Поделиться»** и добавь этот email с правом **«Читатель»:**\n\n"
+                "Данных нет. В каждой из 2 таблиц нажми **«Поделиться»** и добавь этот email с правом **«Читатель»:**\n\n"
                 f"**{share_email}**"
             )
             st.markdown(
-                "[Таблица 1 (СНГ)](https://docs.google.com/spreadsheets/d/1DaiRFqU2d_85cXr0fDmyhzIY4V9fm0zxh4KraZMOFnw/edit) · "
-                "[Таблица 2 (РФ и СНГ)](https://docs.google.com/spreadsheets/d/1v_cheF0k0UCl9CniUWu-pTTYbl0CIOjE0BH0rzW3HXE/edit) · "
-                "[Таблица 3 (TelecomAsia)](https://docs.google.com/spreadsheets/d/1S5lk-ya4iWwq5znY_vebAuTqloyTlWTcsNuXydZXT00/edit) · "
-                "[Таблица 4 (International)](https://docs.google.com/spreadsheets/d/1yj3eWqTpjxZFU0e9yg5A6TIh79N-s9g1Zmz3U-Q_54E/edit)"
+                "[MR Anchors (СНГ Outreach)](https://docs.google.com/spreadsheets/d/1DaiRFqU2d_85cXr0fDmyhzIY4V9fm0zxh4KraZMOFnw/edit?gid=1088920242) · "
+                "[TelecomAsia (Outreach)](https://docs.google.com/spreadsheets/d/1S5lk-ya4iWwq5znY_vebAuTqloyTlWTcsNuXydZXT00/edit?gid=728254189)"
             )
         else:
             st.warning("Нет данных. Положи `service_account.json` в корень проекта или загрузи CSV. См. **docs/МИНИМУМ_ДЕЙСТВИЙ.md**")

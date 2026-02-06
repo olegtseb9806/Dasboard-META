@@ -8,9 +8,9 @@ if (Test-Path .git\index.lock) {
     Remove-Item -Force .git\index.lock
 }
 
-git add app/dashboard/app.py app/dashboard/data_loader.py
+git add app/dashboard/app.py app/dashboard/charts.py app/dashboard/data_loader.py app/dashboard/aggregates.py
 git status
-git commit -m "Dashboard: only 2 tables MR Anchors and TelecomAsia, no table checkboxes"
+git commit -m "Dashboard: fix chart labels (annotations), include charts.py in deploy"
 if ($LASTEXITCODE -eq 0) {
     git push
 }

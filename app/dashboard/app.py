@@ -175,7 +175,7 @@ def main():
     with col2:
         fig_emp = charts.bar_employees(df_emp)
         if fig_emp:
-            st.plotly_chart(fig_emp, use_container_width=True)
+            st.plotly_chart(fig_emp, use_container_width=True, key="chart_employees")
         else:
             st.bar_chart(df_emp.set_index("employee"))
 
@@ -188,7 +188,7 @@ def main():
     with col2:
         fig_proj = charts.bar_projects(df_proj)
         if fig_proj:
-            st.plotly_chart(fig_proj, use_container_width=True)
+            st.plotly_chart(fig_proj, use_container_width=True, key="chart_projects")
         else:
             st.bar_chart(df_proj.set_index("project"))
 

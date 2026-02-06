@@ -18,6 +18,7 @@ SOURCES = [
         "sheet": "СНГ Outreach",
         "name": "MR Anchors",
         "status_col": 1,
+        "donor_col": 2,  # колонка C — уникальный донор (до 3 ссылок на донора)
         "project_col": 3,
         "version_col": 4,
         "employee_col": 5,
@@ -89,12 +90,15 @@ def parse_date(value):
 
 
 def normalize_row(row, cfg, source_name):
-    """Из списка ячеек строки извлечь employee, project, date. Вернуть dict или None."""
+    """Из списка ячеек строки извлечь employee, project, date, donor (если есть). Вернуть dict или None."""
     try:
         employee = row[cfg["employee_col"]] if cfg["employee_col"] < len(row) else ""
         project = row[cfg["project_col"]] if cfg["project_col"] < len(row) else ""
         version = row[cfg["version_col"]] if cfg["version_col"] < len(row) else ""
         date_val = row[cfg["date_col"]] if cfg["date_col"] < len(row) else ""
+        donor = ""
+        if cfg.get("donor_col") is not None and cfg["donor_col"] < len(row):
+            donor = str(row[cfg["donor_col"]]).strip() if row[cfg["donor_col"]] else ""
     except (IndexError, KeyError, TypeError):
         return None
     employee = str(employee).strip() if employee else ""
@@ -113,6 +117,7 @@ def normalize_row(row, cfg, source_name):
         "project": project_label or "—",
         "date": date_parsed,
         "source": source_name,
+        "donor": donor,
     }
 
 
@@ -203,9 +208,9 @@ def load_from_dataframe(df, source_name, project_col="Проект", version_col
 
 
 def records_to_dataframe(records):
-    """Список dict с полями employee, project, date, source -> DataFrame."""
+    """Список dict с полями employee, project, date, source, donor (опц.) -> DataFrame."""
     if not records:
-        return pd.DataFrame(columns=["employee", "project", "date", "source"])
+        return pd.DataFrame(columns=["employee", "project", "date", "source", "donor"])
     return pd.DataFrame(records)
 
 

@@ -23,7 +23,7 @@ from app.dashboard.data_loader import (
     records_to_dataframe,
     filter_by_period,
 )
-from app.dashboard.aggregates import by_employee, by_project, pivot_employee_project, last_placements
+from app.dashboard.aggregates import by_employee, by_project, pivot_employee_project, pivot_employee_project_links_and_donors, last_placements
 from app.dashboard import charts
 
 # Путь к ключу Google (от корня проекта)
@@ -153,14 +153,15 @@ def main():
         st.warning("За выбранный период записей нет.")
         return
 
-    # --- Матрица: сотрудник и количество ссылок по проектам (поднята вверх) ---
+    # --- Матрица: сотрудник, ссылки по проектам, колонка «По мете» — уникальные доноры (C) ---
     st.subheader("Матрица: сотрудник × проект")
-    pivot = pivot_employee_project(df)
+    pivot = pivot_employee_project_links_and_donors(df)
     if not pivot.empty:
         display_pivot = pivot.reset_index().rename(columns={"employee": "Сотрудник"})
         num_cols = [c for c in display_pivot.columns if c != "Сотрудник"]
         display_pivot = display_pivot.copy()
         display_pivot[num_cols] = display_pivot[num_cols].astype(int)
+        st.caption("«Количество уникальных доноров по мете» — из колонки C в MR Anchors.")
         st.dataframe(display_pivot, use_container_width=True, hide_index=True)
     else:
         st.caption("Нет данных для матрицы.")

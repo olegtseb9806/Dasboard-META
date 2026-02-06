@@ -31,6 +31,28 @@ def pivot_employee_project(df):
     return pt
 
 
+def pivot_employee_project_links_and_donors(df):
+    """Матрица: строки — сотрудники, столбцы — проекты (только кол-во ссылок). Колонка «По мете» — уникальные доноры из колонки C."""
+    if df.empty or "employee" not in df.columns or "project" not in df.columns:
+        return pd.DataFrame()
+    pivot_links = df.pivot_table(index="employee", columns="project", aggfunc="size", fill_value=0)
+    total_links = pivot_links.sum(axis=1)
+    result = pivot_links.copy()
+    result["Итого"] = total_links
+    # Уникальные доноры только в колонке «По мете» (колонка C в MR Anchors)
+    if "donor" in df.columns:
+        df_valid = df[df["donor"].astype(str).str.strip() != ""]
+        if not df_valid.empty:
+            total_donors = df_valid.groupby("employee")["donor"].nunique()
+        else:
+            total_donors = pd.Series(dtype=int)
+    else:
+        total_donors = pd.Series(dtype=int)
+    total_donors_aligned = total_donors.reindex(pivot_links.index, fill_value=0).astype(int)
+    result["Количество уникальных доноров по мете"] = total_donors_aligned.values
+    return result
+
+
 def last_placements(df, n=50, employee_filter=None, project_filter=None):
     """Последние n размещений (сортировка по дате убыв.). Опционально фильтр по сотруднику и проекту."""
     if df.empty:
